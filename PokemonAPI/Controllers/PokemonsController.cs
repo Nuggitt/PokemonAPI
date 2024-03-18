@@ -88,18 +88,29 @@ namespace PokemonAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<Pokemon?> Put(int id, [FromBody] Pokemon pokemon)
         {
-            // Update the Pokemon with the given ID and return OK response with the updated Pokemon.
-            Pokemon? updatedPokemon = _pokemonService.Update(id, pokemon);
-            if (updatedPokemon != null)
+            try
             {
-                return Ok(updatedPokemon);
+                // Attempt to update the Pokemon with the given ID.
+                Pokemon? updatedPokemon = _pokemonService.Update(id, pokemon);
+
+                if (updatedPokemon != null)
+                {
+                    // If the Pokemon is successfully updated, return a 200 OK response with the updated Pokemon.
+                    return Ok(updatedPokemon);
+                }
+                else
+                {
+                    // If the Pokemon with the given ID is not found, return a 404 Not Found response.
+                    return NotFound();
+                }
             }
-            else
+            catch (Exception ex) when (ex is ArgumentException || ex is ArgumentNullException)
             {
-                // If the Pokemon with the given ID is not found, return a Not Found response.
-                return NotFound();
+                // If there's an error updating the Pokemon, return a 400 Bad Request response with the error message.
+                return BadRequest(ex.Message);
             }
         }
+
 
         // DELETE action to delete a Pokemon by ID.
         [HttpDelete("{id}")]
